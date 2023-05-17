@@ -49,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 _customListController.removeAt(index);
               },
               onDoubleTap: () {
-                _customListController.reverse();
+                _customListController.moveFromTo(index, index);
               },
               child: Text('#$index Item : ${model.id}'));
         },

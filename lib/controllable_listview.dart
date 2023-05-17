@@ -37,6 +37,19 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
         _data = _data.reversed.toList();
       });
     });
+
+    widget.customListController._onMoveIndex((int from, int to) {
+      if (from != to) {
+        setState(() {
+          final item = _data[from];
+          _data.removeAt(from);
+          final sublist = _data.sublist(0, to);
+          sublist.add(item);
+          sublist.addAll(_data.sublist(to, _data.length));
+          _data = sublist;
+        });
+      }
+    });
     super.initState();
   }
 
@@ -56,6 +69,7 @@ class CustomListController<T> {
   final List<Function(T data)> _onAddListeners = [];
   final List<Function(int index)> _onRemoveListeners = [];
   final List<Function()> _onReverseListeners = [];
+  final List<Function(int from, int to)> _onMoveIndexListeners = [];
 
   //load
   void loadData(T data) {
@@ -87,6 +101,7 @@ class CustomListController<T> {
     _onRemoveListeners.add(onDataRemoved);
   }
 
+  //reverse
   void _invokeReverse() {
     for (var element in _onReverseListeners) {
       element.call();
@@ -99,5 +114,20 @@ class CustomListController<T> {
 
   void onReverse(Function() onReverse) {
     _onReverseListeners.add(onReverse);
+  }
+
+  //move item
+  void _invokeMoveIndex(int from, int to) {
+    for (var element in _onMoveIndexListeners) {
+      element.call(from, to);
+    }
+  }
+
+  void moveFromTo(int from, int to) {
+    _invokeMoveIndex(from, to);
+  }
+
+  void _onMoveIndex(Function(int from, int to) onMove) {
+    _onMoveIndexListeners.add(onMove);
   }
 }
