@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:controllable_listview/controllable_listview.dart';
 import 'package:flutter/material.dart';
 
+import 'item_model.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -28,7 +30,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final CustomListController<String> _customListController =
+  final CustomListController<ItemModel> _customListController =
       CustomListController();
   final ScrollController _scrollController = ScrollController();
 
@@ -38,16 +40,24 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: ControllableListView<String>(
-          customListController: _customListController,
-          scrollController: _scrollController,
-          builder: (context, index, item) {
-            return Text('($index) Item : $item');
-          }),
+      body: ControllableListView<ItemModel>(
+        customListController: _customListController,
+        scrollController: _scrollController,
+        builder: (context, index, model) {
+          return GestureDetector(
+              onTap: () {
+                _customListController.removeAt(index);
+              },
+              onDoubleTap: () {
+                _customListController.reverse();
+              },
+              child: Text('#$index Item : ${model.id}'));
+        },
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _customListController
-              .load("Item : ${Random().nextInt(100000).toString()}");
+              .loadData(ItemModel(id: Random().nextInt(100000)));
         },
         child: const Icon(Icons.add),
       ),
