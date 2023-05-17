@@ -76,7 +76,11 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
     });
 
     widget.customListController._onMoveIndex((int from, int to) {
-      if (from != to) {
+      if (from != to &&
+          from > -1 &&
+          from < _data.length &&
+          to < _data.length &&
+          to > -1) {
         setState(() {
           final item = _data[from];
           _data.removeAt(from);
