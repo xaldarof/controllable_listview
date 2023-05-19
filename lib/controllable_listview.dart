@@ -24,6 +24,9 @@ class ControllableListView<T> extends StatefulWidget {
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final String? restorationId;
   final Clip clipBehavior;
+  final Widget? loadMoreWidget;
+  final bool loadingMore;
+  final Function()? onBottomReached;
 
   @override
   State<ControllableListView> createState() => _ControllableListViewState<T>();
@@ -36,6 +39,9 @@ class ControllableListView<T> extends StatefulWidget {
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.primary,
+    this.loadMoreWidget,
+    this.loadingMore = true,
+    this.onBottomReached,
     this.padding,
     this.prototypeItem,
     this.shrinkWrap = false,
@@ -73,6 +79,14 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
       setState(() {
         _data = _data.reversed.toList();
       });
+    });
+
+    widget.scrollController.addListener(() {
+      bool isTop = widget.scrollController.position.pixels ==
+          widget.scrollController.position.maxScrollExtent;
+      if (!isTop) {
+        widget.onBottomReached?.call();
+      }
     });
 
     widget.customListController._onMoveIndex((int from, int to) {
@@ -118,6 +132,22 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
       dragStartBehavior: widget.dragStartBehavior,
       keyboardDismissBehavior: widget.keyboardDismissBehavior,
       itemBuilder: (e, i) {
+        if (i == _data.length - 1 && widget.loadMoreWidget != null) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              widget.builder(e, i, _data[i]),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (widget.loadingMore == true) widget.loadMoreWidget!,
+                ],
+              )
+            ],
+          );
+        }
         return widget.builder(e, i, _data[i]);
       },
     );

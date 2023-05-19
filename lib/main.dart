@@ -41,17 +41,39 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: ControllableListView<ItemModel>(
+        onBottomReached: () {
+          Future.delayed(const Duration(seconds: 3), () {
+            _customListController.loadData(const ItemModel(id: 1));
+          });
+        },
+        loadingMore: true,
+        loadMoreWidget: Container(
+          margin: const EdgeInsets.all(12),
+          child: const Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
         customListController: _customListController,
         scrollController: _scrollController,
         builder: (context, index, model) {
           return GestureDetector(
-              onTap: () {
-                _customListController.removeAt(index);
-              },
-              onDoubleTap: () {
-                _customListController.moveFromTo(index, index + 1);
-              },
-              child: Text('#$index Item : ${model.id}'));
+            onTap: () {
+              _customListController.removeAt(index);
+            },
+            onDoubleTap: () {
+              _customListController.moveFromTo(index, index + 1);
+            },
+            child: Container(
+              margin: const EdgeInsets.all(12),
+              height: 100,
+              padding: const EdgeInsets.all(16),
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.black12)),
+              child: Text('Title : ${model.id}'),
+            ),
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
