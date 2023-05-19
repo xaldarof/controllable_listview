@@ -46,8 +46,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
           _customListController.loadData(const ItemModel(id: 1));
         },
-        loadingMore: true,
-        loadMoreWidget: Container(
+        showFooter: true,
+        footerWidget: Container(
           margin: const EdgeInsets.all(12),
           child: const Center(
             child: CircularProgressIndicator(),

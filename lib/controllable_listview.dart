@@ -24,8 +24,8 @@ class ControllableListView<T> extends StatefulWidget {
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final String? restorationId;
   final Clip clipBehavior;
-  final Widget? loadMoreWidget;
-  final bool loadingMore;
+  final Widget? footerWidget;
+  final bool showFooter;
   final Function()? onBottomReached;
 
   @override
@@ -39,8 +39,8 @@ class ControllableListView<T> extends StatefulWidget {
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
     this.primary,
-    this.loadMoreWidget,
-    this.loadingMore = true,
+    this.footerWidget,
+    this.showFooter = true,
     this.onBottomReached,
     this.padding,
     this.prototypeItem,
@@ -82,7 +82,8 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
     });
 
     widget.scrollController.addListener(() {
-      bool reachedBottom = widget.scrollController.position.pixels == widget.scrollController.position.maxScrollExtent;
+      bool reachedBottom = widget.scrollController.position.pixels ==
+          widget.scrollController.position.maxScrollExtent;
       if (reachedBottom) {
         widget.onBottomReached?.call();
       }
@@ -131,7 +132,7 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
       dragStartBehavior: widget.dragStartBehavior,
       keyboardDismissBehavior: widget.keyboardDismissBehavior,
       itemBuilder: (e, i) {
-        if (i == _data.length - 1 && widget.loadMoreWidget != null) {
+        if (i == _data.length - 1 && widget.footerWidget != null) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -141,7 +142,7 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (widget.loadingMore == true) widget.loadMoreWidget!,
+                  if (widget.showFooter == true) widget.footerWidget!,
                 ],
               )
             ],
