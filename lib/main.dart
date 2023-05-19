@@ -42,8 +42,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: ControllableListView<ItemModel>(
         onBottomReached: () async {
+          _customListController.toggleFooter(true);
           await Future.delayed(const Duration(seconds: 3));
-
+          _customListController.toggleFooter(false);
           _customListController.loadData(const ItemModel(id: 1));
         },
         footerWidget: Container(

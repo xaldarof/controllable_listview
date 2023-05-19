@@ -61,6 +61,14 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
   @override
   void initState() {
     super.initState();
+
+    widget.scrollController.addListener(() {
+      final reached = widget.scrollController.offset == widget.scrollController.position.maxScrollExtent;
+      if (reached) {
+        widget.onBottomReached?.call();
+      }
+    });
+
     widget.customListController.addListener(() {
       setState(() {});
     });
