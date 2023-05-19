@@ -41,10 +41,10 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: ControllableListView<ItemModel>(
-        onBottomReached: () {
-          Future.delayed(const Duration(seconds: 3), () {
-            _customListController.loadData(const ItemModel(id: 1));
-          });
+        onBottomReached: () async {
+          await Future.delayed(const Duration(seconds: 3));
+
+          _customListController.loadData(const ItemModel(id: 1));
         },
         loadingMore: true,
         loadMoreWidget: Container(

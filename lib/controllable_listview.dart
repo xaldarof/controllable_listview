@@ -82,9 +82,8 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
     });
 
     widget.scrollController.addListener(() {
-      bool isTop = widget.scrollController.position.pixels ==
-          widget.scrollController.position.maxScrollExtent;
-      if (!isTop) {
+      bool reachedBottom = widget.scrollController.position.pixels == widget.scrollController.position.maxScrollExtent;
+      if (reachedBottom) {
         widget.onBottomReached?.call();
       }
     });
