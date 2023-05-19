@@ -46,7 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
           _customListController.loadData(const ItemModel(id: 1));
         },
-        showFooter: true,
         footerWidget: Container(
           margin: const EdgeInsets.all(12),
           child: const Center(
@@ -61,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
               _customListController.removeAt(index);
             },
             onDoubleTap: () {
-              _customListController.moveFromTo(index, index + 1);
+              _customListController.moveFromIndexTo(index, index + 1);
             },
             child: Container(
               margin: const EdgeInsets.all(12),

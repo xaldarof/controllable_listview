@@ -25,7 +25,6 @@ class ControllableListView<T> extends StatefulWidget {
   final String? restorationId;
   final Clip clipBehavior;
   final Widget? footerWidget;
-  final bool showFooter;
   final Function()? onBottomReached;
 
   @override
@@ -40,7 +39,6 @@ class ControllableListView<T> extends StatefulWidget {
     this.reverse = false,
     this.primary,
     this.footerWidget,
-    this.showFooter = true,
     this.onBottomReached,
     this.padding,
     this.prototypeItem,
@@ -60,56 +58,17 @@ class ControllableListView<T> extends StatefulWidget {
 }
 
 class _ControllableListViewState<T> extends State<ControllableListView<T>> {
-  List<T> _data = <T>[];
-
   @override
   void initState() {
-    widget.customListController.onLoad((data) {
-      setState(() {
-        _data.add(data);
-      });
-    });
-    widget.customListController.onRemoveAt((int index) {
-      setState(() {
-        _data.removeAt(index);
-      });
-    });
-
-    widget.customListController.onReverse(() {
-      setState(() {
-        _data = _data.reversed.toList();
-      });
-    });
-
-    widget.scrollController.addListener(() {
-      bool reachedBottom = widget.scrollController.position.pixels ==
-          widget.scrollController.position.maxScrollExtent;
-      if (reachedBottom) {
-        widget.onBottomReached?.call();
-      }
-    });
-
-    widget.customListController._onMoveIndex((int from, int to) {
-      if (from != to &&
-          from > -1 &&
-          from < _data.length &&
-          to < _data.length &&
-          to > -1) {
-        setState(() {
-          final item = _data[from];
-          _data.removeAt(from);
-          final sublist = _data.sublist(0, to);
-          sublist.add(item);
-          sublist.addAll(_data.sublist(to, _data.length));
-          _data = sublist;
-        });
-      }
-    });
     super.initState();
+    widget.customListController.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final items = widget.customListController.data;
     return ListView.builder(
       key: widget.key,
       clipBehavior: widget.clipBehavior,
@@ -125,98 +84,87 @@ class _ControllableListViewState<T> extends State<ControllableListView<T>> {
       prototypeItem: widget.prototypeItem,
       scrollDirection: widget.scrollDirection,
       physics: widget.scrollPhysics,
-      itemCount: _data.length,
+      itemCount: widget.customListController.data.length,
       controller: widget.scrollController,
       cacheExtent: widget.cacheExtent,
       semanticChildCount: widget.semanticChildCount,
       dragStartBehavior: widget.dragStartBehavior,
       keyboardDismissBehavior: widget.keyboardDismissBehavior,
       itemBuilder: (e, i) {
-        if (i == _data.length - 1 && widget.footerWidget != null) {
+        if (i == items.length - 1 && widget.footerWidget != null) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              widget.builder(e, i, _data[i]),
+              widget.builder(e, i, items[i]),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (widget.showFooter == true) widget.footerWidget!,
+                  if (widget.customListController.isFooterVisible)
+                    widget.footerWidget!,
                 ],
               )
             ],
           );
         }
-        return widget.builder(e, i, _data[i]);
+        return widget.builder(e, i, items[i]);
       },
     );
   }
 }
 
 class CustomListController<T> {
-  final List<Function(T data)> _onAddListeners = [];
-  final List<Function(int index)> _onRemoveListeners = [];
-  final List<Function()> _onReverseListeners = [];
-  final List<Function(int from, int to)> _onMoveIndexListeners = [];
+  List<T> data = <T>[];
+  bool showFooter = false;
+  final List<Function()> _onShouldRebuildListeners = [];
+
+  bool get isFooterVisible => showFooter;
 
   //load
-  void loadData(T data) {
-    _invokeAdded(data);
-  }
-
-  void _invokeAdded(T data) {
-    for (var element in _onAddListeners) {
-      element.call(data);
-    }
-  }
-
-  void onLoad(Function(T data) onDataLoad) {
-    _onAddListeners.add(onDataLoad);
-  }
-
-  //remove
-  void _invokeRemoved(int index) {
-    for (var element in _onRemoveListeners) {
-      element.call(index);
-    }
+  void loadData(T item) {
+    data.add(item);
+    notify();
   }
 
   void removeAt(int index) {
-    _invokeRemoved(index);
+    data.removeAt(index);
+    notify();
   }
 
-  void onRemoveAt(Function(int index) onDataRemoved) {
-    _onRemoveListeners.add(onDataRemoved);
-  }
-
-  //reverse
-  void _invokeReverse() {
-    for (var element in _onReverseListeners) {
+  void notify() {
+    for (var element in _onShouldRebuildListeners) {
       element.call();
     }
   }
 
-  void reverse() {
-    _invokeReverse();
+  void addListener(Function() listener) {
+    _onShouldRebuildListeners.add(listener);
   }
 
-  void onReverse(Function() onReverse) {
-    _onReverseListeners.add(onReverse);
-  }
-
-  //move item
-  void _invokeMoveIndex(int from, int to) {
-    for (var element in _onMoveIndexListeners) {
-      element.call(from, to);
+  void moveFromIndexTo(int from, int to) {
+    if (from != to &&
+        from > -1 &&
+        from < data.length &&
+        to < data.length &&
+        to > -1) {
+      final item = data[from];
+      data.removeAt(from);
+      final sublist = data.sublist(0, to);
+      sublist.add(item);
+      sublist.addAll(data.sublist(to, data.length));
+      data = sublist;
+      notify();
     }
   }
 
-  void moveFromTo(int from, int to) {
-    _invokeMoveIndex(from, to);
+  void reverse() {
+    data = data.reversed.toList();
+    notify();
   }
 
-  void _onMoveIndex(Function(int from, int to) onMove) {
-    _onMoveIndexListeners.add(onMove);
+  void toggleFooter(bool show) {
+    showFooter = show;
+    notify();
   }
 }
